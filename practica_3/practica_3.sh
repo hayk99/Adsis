@@ -20,9 +20,11 @@ then
 				id=$(echo $line| cut -d ',' -f1)
 				pass=$(echo $line| cut -d ',' -f2)
 				name=$(echo $line| cut -d ',' -f3)
+			if [ $id -gt 1815 ]
+				then 
+					sudo useradd -u $id -g $i d-f 30 -p $pass $name
 			done < "$1"
-			if [ id -gt 1815 ]
-				then
+
 		elif [ $1 = "-s" ]
 		then 
 			sudo mkdir -p /extra/backup
