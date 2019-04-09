@@ -34,6 +34,7 @@ then
 						useradd -U -m -K UID_MIN=1815 -k /etc/skel -c "$longName" "$name" 2>/dev/null 
 						echo "$name:$pass" | chpasswd
 						passwd -x 30 $name | 2>/dev/null
+						usermod -U $name
 						echo "$longName ha sido creado"
 					else
 						echo "El usuario $name ya existe"
