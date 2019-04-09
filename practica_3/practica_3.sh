@@ -26,15 +26,16 @@ then
 					#compruebas que id sea > 1815 
 					#0 si existe 1 sino
 					#comprobar que no existe el nombre
-					id -u $name 2>/dev/null
-					if [ $? ]
+					id -u $name >/dev/null 2>&1
+					#echo &(id -u $name)
+					if [ $? -ne 0 ]
 					then
+
 						useradd -U -m -K UID_MIN=1815 -k /etc/skel -c "$longName" "$name" 2>/dev/null 
 						echo "$name:$pass" | chpasswd
 						passwd -x 30 $name | 2>/dev/null
 						echo "$longName ha sido creado"
-					elif [ !$kk1 ]
-					then 
+					else
 						echo "El usuario $name ya existe"
 					fi
 				else 
@@ -54,20 +55,20 @@ then
 				#compruebas que id sea > 1815
 				#0 si existe 1 sino
 				#comprobar que no existe id
-				id -u $name
-				if [ !$? ]
+				id -u $name >/dev/null 2>&1
+				if [ $? -eq 0 ] 2>/dev/null
 				then
 					#borro
-					tar -czf /extra/backup/$name.tar /home/$name
+					tar -czf /extra/backup/$name.tar /home/$name 2>/dev/null
 					#devuelve 0 si es correcto
-					if [ !$? ]
+					if [ !$? ] 2>/dev/null
 					then
-							userdel -r $name 
+							userdel -r $name 2>/dev/null
 					fi
 				fi
 			done < "$2"
 
-		else
+		else 2>/dev/null
 			echo -e "Opcion invalida.\n"
 		fi
 	
