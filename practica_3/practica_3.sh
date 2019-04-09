@@ -21,17 +21,17 @@ then
 				pass=$(echo $line | cut -d ',' -f2)
 				longName=$(echo $line | cut -d ',' -f3)
 				#comprobamos que no sean campos vacios
-				if [ $name != "" && $pass != "" && $longName != "" ]
+				if [[ ( $name != "" ) && ( $pass != "" ) && ( $longName != "" ) ]]
 				then
 					#compruebas que id sea > 1815 
 					#0 si existe 1 sino
 					#comprobar que no existe el nombre
-					id -u $name
+					id -u $name 2>/dev/null
 					if [ $? ]
 					then
-						sudo useradd -U -m -K UID_MIN=1815 -c $longName $name
-						echo "$name:$pass" | sudo chpasswd
-						sudo passwd $name -x 30
+						useradd -U -m -K UID_MIN=1815 -k /etc/skel -c "$longName" "$name" 2>/dev/null 
+						echo "$name:$pass" | chpasswd
+						passwd -x 30 $name | 2>/dev/null
 						echo "$longName ha sido creado"
 					elif [ !$kk1 ]
 					then 
@@ -46,7 +46,7 @@ then
 		then 
 			if [ ! -d "/extra/backup" ]
 			then
-				sudo mkdir -p /extra/backup
+				mkdir -p /extra/backup
 			fi
 			while read line
 			do
@@ -58,11 +58,11 @@ then
 				if [ !$? ]
 				then
 					#borro
-					sudo tar -czf /extra/backup/$name.tar /home/$name
+					tar -czf /extra/backup/$name.tar /home/$name
 					#devuelve 0 si es correcto
 					if [ !$? ]
 					then
-						sudo userdel -r $name 
+							userdel -r $name 
 					fi
 				fi
 			done < "$2"
