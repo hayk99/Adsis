@@ -59,21 +59,10 @@ then
 				then
 					#borro
 					tar -cvzf /extra/backup/$name.tar.gz /home/$name
-					userdel 
-				elif [ $kk ]
-				then
-					echo "El usuario $ids no existe"
-				fi
-
-				#leemos solo el primer campo que es id
-				ids=$(echo $line | cut -d ',' -f1)
-				#comprobar que no existe usuario
-				if [ ! $(id -u $id) ]
-				then
-					tar
-					sudo userdel -r $name
-				else
-					echo "El usuario $ids ya existe"
+					#devuelve 0 si es correcto
+					if [ !$? ]
+					then
+						userdel -r $name 
 				fi
 			done < "$1"
 
