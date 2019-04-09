@@ -68,11 +68,9 @@ then
 					fi
 				fi
 			done < "$2"
-
-		else 2>/dev/null
+		else 
 			echo -e "Opcion invalida.\n"
 		fi
-	
 	else
 		echo -e "Numero de parametros incorrectos. \n"
 	fi
