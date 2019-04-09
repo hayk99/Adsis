@@ -40,7 +40,7 @@ then
 				else 
 					echo "Campo invalido"
 				fi
-			done < "$1"
+			done < "$2"
 
 		elif [ $1 = "-s" ]
 		then 
@@ -63,8 +63,9 @@ then
 					if [ !$? ]
 					then
 						sudo userdel -r $name 
+					fi
 				fi
-			done < "$1"
+			done < "$2"
 
 		else
 			echo -e "Opcion invalida.\n"
