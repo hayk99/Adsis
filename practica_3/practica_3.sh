@@ -58,7 +58,7 @@ then
 				if [ !$? ]
 				then
 					#borro
-					sudo tar -cvzf /extra/backup/$name.tar /home/$name
+					sudo tar -czf /extra/backup/$name.tar /home/$name
 					#devuelve 0 si es correcto
 					if [ !$? ]
 					then
