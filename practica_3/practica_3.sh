@@ -57,12 +57,12 @@ then
 				#0 si existe 1 sino
 				#comprobar que no existe id
 				id -u $name >/dev/null 2>&1
-				if [ $? -eq 0 ] 2>/dev/null
+				if [ $? -eq 0 ] 
 				then
 					#borro
 					tar -czf /extra/backup/$name.tar /home/$name 2>/dev/null
 					#devuelve 0 si es correcto
-					if [ !$? ] 2>/dev/null
+					if [ !$? ] 
 					then
 							userdel -r $name 2>/dev/null
 					fi
