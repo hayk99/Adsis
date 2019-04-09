@@ -30,7 +30,7 @@ then
 					if [ $? ]
 					then
 						sudo useradd -U -m -K UID_MIN=1815 -c $longName $name
-						echo "$name:$pass" | chpasswd
+						echo "$name:$pass" | sudo chpasswd
 						sudo passwd $name -x 30
 						echo "$longName ha sido creado"
 					elif [ !$kk1 ]
@@ -58,11 +58,11 @@ then
 				if [ !$? ]
 				then
 					#borro
-					tar -cvzf /extra/backup/$name.tar.gz /home/$name
+					sudo tar -cvzf /extra/backup/$name.tar /home/$name
 					#devuelve 0 si es correcto
 					if [ !$? ]
 					then
-						userdel -r $name 
+						sudo userdel -r $name 
 				fi
 			done < "$1"
 
