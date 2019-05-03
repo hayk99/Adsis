@@ -1,0 +1,27 @@
+Hayk Kocharyan
+José Félix Yagüe
+
+Administración de sistemas
+
+Memoria práctica 3
+
+Lo primero que hacemos en nuestro script es comprobar que el usuario que lo ha ejecutado
+tiene privilegios de administrador, para ello hemos usado un if en el then hacemos el
+programa y en el else damos una salida de error advirtiendo de la falta de privilegios.
+Seguidamente comprobamos que haya sólo 2 parámetros dando otra salida de error en
+caso contrario y que el primero de ellos sea -a o -s y a partir de ahí dividimos el programa en
+dos, uno para cada opción haciendo en los dos un bucle para leer que aunque sean
+bastante parecidos queda más limpio desdoblarlos de esta forma.
+En la opción -a leemos los tres campos de fichero con un while guardando cada campo en
+una variable y mirando que ninguno de ellos sea nulo, dando una salida de error si es el
+caso. Tras esto comprobamos si el usuario leído en esa iteración está repetido o no. Si no
+existe lo añadimos con un useradd y la contraseña con chpasswd y passwd:
+useradd -U -m -K UID_MIN=1815 -k /etc/skel -c "$longName" "$name" 2>/dev/null
+echo "$name:$pass" | chpasswd
+passwd -x 30 $name | 2>/dev/null
+En la opción -s solo leemos el primer campo de cada línea del fichero usando un bucle igual
+que en la otra opción para leer y miramos si ya existe un usuario con ese nombre para poder
+borrarlo. En caso de que exista guardamos lo que haya en su directorio home en el
+/extra/backup comprimiendo los archivos o directorios que haya en él con el comando:
+tar -czf /extra/backup/$name.tar /home/$name 2>/dev/null
+Si se ha hecho esta operación con éxito borramos el usuario con userdel.

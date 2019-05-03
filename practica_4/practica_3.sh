@@ -8,6 +8,7 @@ then
 	#sudo sh -c "echo \"$usrexec	ALL=(ALL:ALL) ALL\" >> /etc/sudoers"
 	
 	#comprobar si hay 2 parámetros
+	echo $#
 	if [ $# = 2 ]
 	then
 		filename=$1
@@ -71,7 +72,7 @@ then
 			echo -e "Opcion invalida.\n"
 		fi
 	else
-		echo -e "Numero de parametros incorrectos. \n"
+		echo -e " 3_Numero de parametros incorrectos. \n"
 	fi
 		
 else
