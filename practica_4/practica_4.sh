@@ -19,6 +19,7 @@ then
 						#hago ssh para ver si puedo realizar una conexion válida
 						if ssh -i ~/.ssh/id_as_ed25519 as@$lineIP echo  >/dev/null 2>&1 
 						then
+							echo creando en maquina $lineIP
 							#itero fichero de usuarios a crear
 							while read line <&4;do
 								#lee del fichero los campos nombre, password, y nombre completo
@@ -60,8 +61,9 @@ then
 					if [[ $lineIP =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]
 					then
 						#hago ssh para ver si puedo realizar una conexion válida
-						if ssh -i ~/.ssh/id_as_ed25519 as@$lineIP echo prueba 2>> /dev/null 
+						if ssh -i ~/.ssh/id_as_ed25519 as@$lineIP echo prueba   >/dev/null 2>&1
 						then
+							echo borrando en maquina $lineIP
 							# compruebo que tenga el directorio /extra/backup
 							if  ! ssh -i ~/.ssh/id_as_ed25519 as@$lineIP " test -d /extra/backup "
 							then
