@@ -1,29 +1,31 @@
-Autores: Hayk Kocharyan (757715) y Jose Felix Yagüe (755416)
-Practica 4 ADSIS
+#Autores: Hayk Kocharyan (757715) y Jose Felix Yagüe (755416)
+#Practica 4 ADSIS
 
 En primer lugar vamos a mostrar el diagrama de red que hemos usado
 
-debian-as1				debian-as2
-192.168.56.2				192.168.56.3
-|					   |
-|					   |
-|					   |
-|______________________host________________|
+debian-as1								debian-as2
+192.168.56.2							192.168.56.3
+08007F1562D								080027ED4F83
+|					   						|
+|					   						|	
+|					   						|	
+| _ _ _ _ _ _ _ _ _ _ _host_ _ _ _ _ _ _ _ _|
                     192.168.56.1
+                    080027E4E1F3
 
 Tras crear las dos máquinas virtuales, el primer paso fue establecer la IP y la máscara de red para el 'host network manager' de nuestra máquina virtual.
 El siguiente paso consistia en rellenar el fichero de interfaces para que hubiese conexión entre estos, pero para ello previamente habia que identificar las interfaces y configurar los adaptadores. Para que fuese sencillas estas idetificación, en primer lugar configuramos el primer adaptador (NAT), tras esto, lanzamos la máquina y ejecutamos ip addr, podemos observar dos interfaces, "lo" (loopback) y "enp0s3" que es el primer adaptador habilitado, en este caso la NAT, por lo que ya tenemos identificado la interfaz de la nat y tras activar el siguiente adaptador podremos osbervar cual es la interfaz de la red privada.
+Tambien podemos identificar la interfaz através de la ejecución del comando ip addr y buscando en la salida de esta, la mac correspondiente a la nat y ala red privada (las cuales encontramos en la configuración de los adaptadores de la máquina virtual)
 Activamos el segundo adaptador y ejecutamos ip addr, podemos observar una nueva interfaz, 'enp0s8'.
 
 Una vez identificadas las intefaces el siguiente paso consistió en modificar el fichero '/etc/network/interfaces', se procedió a añadir las siguientes lineas:
 	auto enp0s8
 	iface enp0s8 inet static
-	address 192.168.56.2
+	address 192.168.56.{2|3}
 	netmask 255.255.255.0
 	broadcast 192.168.56.255
-	network 192.168.56.1
+	network 192.168.56.0
 
-en el caso de la máquina dos habría que modificar el address por: 192.168.56.3
 En netmask ponemos la máscara que se pide en el enunciado. 
 Destacar que broadcast y network son sentencias redundantes, pero se han añadido.
 
@@ -34,8 +36,8 @@ Para continuar, instalamos los paquetes ssh y configuramos las máquinas.
 En primer lugar, desde nuestro host a traves del comando 'ssh-keygen' creamos una clave pública y una privada, ya que se nos pide que sea una clave tipo ed25519 el comando será el siguiente: 'ssh-keygen -t ed25519'. Tras esto, se nos solicita el nombre del fichero dónde guardarlo, le ponemos "id_as_ed25519". Ahora para que se puedan realizar futuras conexiones remotas entre las máquinas, las mv deben conocer la clave pública del host, por lo que mediante el comando 'ssh-copy-id' pasaremos esta clave pública a ambas máquinas virtuales, la sentencia seria la siguiente: 'ssh-copy-id -i ruta_clave_publica usuario@ip',  en el caso de la mv1 sería: 'ssh-copy-id -i ~/.ssh/as_id_ed25519.pub as@192.168.56.2'
 Realizamos esto para ambas máquinas.
 
-Ahora necesitamos configurar el ficher de sshd_config para las máquinas, con esto conseguiremos ejecutar ssh sin necesidad de contraseñas y para que root no pueda conectarse en estas dos máquinas, tal y como se exige en el enunciado.
-Para ello, en ambas máquinas, modificamos el fichero sshd_config descomentando las linas "PasswrodAuthentication" y "PermitRootLogin", ambas deben tener la opcion "no"
+Ahora necesitamos configurar el ficher de sshd_config para las máquinas, con esto conseguiremos ejecutar ssh sin necesidad de contraseñas y además nuestro host no será capaz de conectarse al usuario root de los guests, tal y como se exige en el enunciado.
+Para ello, en ambas máquinas, modificamos el fichero sshd_config descomentando la linea y "PermitRootLogin" y añadiendo al final un "no".
 
 
 Tras realizar estas modificaciones ya estamos preparados para establecer conexión entre host y las máquinas virtuales.

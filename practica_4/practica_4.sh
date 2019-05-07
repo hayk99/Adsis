@@ -40,7 +40,7 @@ then
 										#añadimos fecha de expiracion del password
 										ssh -i ~/.ssh/id_as_ed25519 as@$lineIP " sudo passwd -x 30 $name | 2>/dev/null "
 										ssh -i ~/.ssh/id_as_ed25519 as@$lineIP " sudo usermod -U $name "
-										echo $longName ha sido creado
+										echo $name ha sido creado
 									else
 										echo El usuario $name ya existe
 									fi
