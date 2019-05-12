@@ -1,0 +1,35 @@
+PARTE_1
+___________________________________________________________________________________________________________________________________________
+Tras crear el disco en la máquina virutal, arrancamos esta.
+En una terminal ejecutamos 'sudo parted /dev/sdb mklabel gpt' para detallar el tipo de tabla de partición, como exige en el enunciado esta debe ser GUID Partition table.
+A continuación, creamos las dos participones con 'mkpart', la sentencia es la siguiente:
+	'mkpart partition1 1MiB 16MiB' y 'mkpart partition2 17MiB 32MiB'
+	 (Para evitar problemas de alineamiento comenzamos las particiones en 1 y 17)
+El siguiente paso es especificar el sistema de fichero, para la primera partición elegiremos ext3 y la segunda ext4, el comando es: 'sudo mkfs.ext3 /dev/sdb1' y 'sudo mkfs.ext4 /dev/sdb2'.
+Para continuar, montamos las particiones: 
+	'sudo mount -t ext3 /dev/sdb1/ /home/as/disk1/'
+	'sudo mount -t ext4 /dev/sdb2/ /home/as/disk2/'
+	(Donde disk1 y disk2 son los directorios donde montamos las particiones)
+Para finalizar con el proceso, editamos fstab para que las particiones se monten en el momento que se arranque el sistema.
+Añadiremos las lineas: 
+	'/dev/sdb1/ /home/as/disk1/ ext3 default 0 2'
+	'/dev/sdb2/ /home/as/disk2/ ext4 default 0 2'
+En cuanto a los flags elegidos, las opciones de montaje las dejamos por defecto, para el flag dump lo dejamos a 0, ya que no deseamos ninguna compia de seguridad a traves de la herramienta dump. Finalmente, el tipo de checkeo del sistema de ficheros, lo dejamos en 2, ya que no es una partición root.
+Para comprobar estos pasos, podemos ejecutar sudo parted /dev/sdb y a continuación, 'print', esto nos deberia mostrar las dos particiones. También podemos mostrar el fichero 'mtab', el cual debería contener dos lineas con nuestros nuevos discos añadidos.
+
+PARTE_2
+___________________________________________________________________________________________________________________________________________
+Creamos un script básico como la de la práctica anterior, con un ssh básico con los comandos exigidos en la práctica.
+
+PARTE_3
+___________________________________________________________________________________________________________________________________________
+Creamos el disco en los ajustes de Virutal Box como en el paso 1
+Para crear una partición LINUX LVM debemos crear las tres componentes de LVM, es decir, el volumen físico, el grupo de volumenes y el volumen lógico-
+Para el volumen físico, ejecutaremos el comando 'sudo pvcreate /dev/sdc'.
+Para el grupo de volumenes, que lo llamaremos vg_p5, ejecutamos 'sudo vgcreate vg_p5 /dev/sdc/'
+El siguiente paso consiste en crear el volumen lógico que ocupe todo el volumen físico, para ello debemos conocer su tamaño, el cual podremos obtenerlo a través del comando 'vgdisplay'. Tras la ejecución podremos ver en la linea "FREE PE /SIZE", esta nos indica el número de extents y el tamaño en MiB. Para crear el volumen lógico poremos ejecutar 'lvcreate -L 32Mib --name vl_0 vg_p5' o 'lvcreate -l 8 --name vl_0 vg_p5', en ambos casos creamos lo mismo, en la primera especificamos el tamaño en MiB en la segunda en el numero de extents lógicos, el cual es más exacto y correcto de ejecutar.
+(vl_0 es el nombre que le asginamos y vg_p5 es el nombre del grupo de volumenes).
+Para comprobar la correcta ejecución ejecutamos 'vgdisplay',  este nos sacará en el caso de que exista información del grupo de volumenes. Para comprobar el volumen lógico, ejecutamos 'vldisplay', este nos mostrará información del volumen lógico si se ha creado correctamente.
+
+a continuación montamos la partición en el directorio deseado.
+
