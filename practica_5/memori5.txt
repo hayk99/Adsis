@@ -31,5 +31,7 @@ El siguiente paso consiste en crear el volumen lógico que ocupe todo el volumen
 (vl_0 es el nombre que le asginamos y vg_p5 es el nombre del grupo de volumenes).
 Para comprobar la correcta ejecución ejecutamos 'vgdisplay',  este nos sacará en el caso de que exista información del grupo de volumenes. Para comprobar el volumen lógico, ejecutamos 'vldisplay', este nos mostrará información del volumen lógico si se ha creado correctamente.
 
-a continuación montamos la partición en el directorio deseado.
+Damos el formato de sistema de fichero deseado: 'sudo mkfs -t ext4 /dev/vg_p5/vl_0'
+y montamos, 'sudo mount -t ext4 /dev/vg_p5/lv_0 /home/as/disk3'
+
 
