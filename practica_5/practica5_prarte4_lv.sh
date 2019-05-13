@@ -7,7 +7,7 @@ while [ $grupo != ""]; do
 	grupos=$(sudo vgscan)
 	#miramos si existe el grupo deseado en los escaneados anteriormente
 	echo "$grupos" | grep "$vg"
-	if [ $? ]
+	if [ $? -eq 1]
 	then  
 		echo "No existe grupo"$vg""
 		exit 1
@@ -16,7 +16,7 @@ while [ $grupo != ""]; do
 	logicos=$(sudo lvscan)
 	#miramos si existe el nuestro
 	echo "$logicos" | grep "$vol"
-	if [ $? ]
+	if [ $? -eq 1]
 	then
 		#no existe, lo creo
 		sudo lvcreate -L $tam --name $vol $grupo
@@ -26,7 +26,7 @@ while [ $grupo != ""]; do
 	else
 		#existe, aumento
 		sudo lvextend -L+$tam /dev/$grupo/$vol
-		sudo e2fsck -f /dev/$grupo/$vol
+		#sudo e2fsck -f /dev/$grupo/$vol
 		sudo resize2fs /dev/$grupo/$vol
 	fi
 	read grupo vol tam filsis dir basura

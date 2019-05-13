@@ -11,9 +11,9 @@ then
 	grupos=$(sudo vgscan)
 	#miramos si existe el grupo deseado en los escaneados anteriormente
 	echo "$grupos" | grep "$vg"
-	if [ $? ]
+	if [ $? -eq 1]
 	then  
-		echo "No existe grupo"$vg""
+		echo "No existe grupo "$vg""
 		exit 1
 	else
 		for parametro in "$@"; do
