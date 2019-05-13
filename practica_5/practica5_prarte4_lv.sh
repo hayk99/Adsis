@@ -2,7 +2,7 @@
 #AUTORES: Hayk Kocharyan (757715) & Jose Felix Yagüe (755416)
 
 read grupo vol tam filsis dir basura
-while [ $grupo != ""]; do
+while [ -z "$grupo" ]; do
 	#escaneamos para ver que grupos tenemos
 	grupos=$(sudo vgscan)
 	#miramos si existe el grupo deseado en los escaneados anteriormente
