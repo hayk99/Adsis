@@ -12,14 +12,15 @@ Para continuar, montamos las particiones:
 	(Donde disk1 y disk2 son los directorios donde montamos las particiones)
 Para finalizar con el proceso, editamos fstab para que las particiones se monten en el momento que se arranque el sistema.
 Añadiremos las lineas: 
-	'/dev/sdb1/ /home/as/disk1/ ext3 default 0 2'
-	'/dev/sdb2/ /home/as/disk2/ ext4 default 0 2'
+	'UUID de:/dev/sdb1/ /home/as/disk1/ ext3 default 0 2'
+	'UUID de:/dev/sdb2/ /home/as/disk2/ ext4 default 0 2'
+	(los UUID se han obtenido a través del comando 'blkid')
 En cuanto a los flags elegidos, las opciones de montaje las dejamos por defecto, para el flag dump lo dejamos a 0, ya que no deseamos ninguna compia de seguridad a traves de la herramienta dump. Finalmente, el tipo de checkeo del sistema de ficheros, lo dejamos en 2, ya que no es una partición root.
-Para comprobar estos pasos, podemos ejecutar sudo parted /dev/sdb y a continuación, 'print', esto nos deberia mostrar las dos particiones. También podemos mostrar el fichero 'mtab', el cual debería contener dos lineas con nuestros nuevos discos añadidos.
+Para comprobar estos pasos, podemos ejecutar sudo parted /dev/sdb y a continuación, 'print', esto nos deberia mostrar las dos particiones. También podemos mostrar el fichero 'mtab', el cual debería contener dos lineas con nuestros nuevos discos añadidos(opcion mas recomendable).
 
 PARTE_2
 ___________________________________________________________________________________________________________________________________________
-Creamos un script básico como la de la práctica anterior, con un ssh básico con los comandos exigidos en la práctica.
+Creamos un script básico,con un ssh básico con los comandos exigidos en la práctica (siguiendo el estilo de la practica 4).
 
 PARTE_3
 ___________________________________________________________________________________________________________________________________________
@@ -35,3 +36,24 @@ Damos el formato de sistema de fichero deseado: 'sudo mkfs -t ext4 /dev/vg_p5/vl
 y montamos, 'sudo mount -t ext4 /dev/vg_p5/lv_0 /home/as/disk3'
 
 
+
+-----version2------------------
+parte 3.1
+
+añado disco
+sudo fdisk -f lista
+sudo fdisk /dev/sdc
+n-nuevo--->p-primario---->3 intros -->t--type--> 8e----lvm...-->w (guarda)
+
+
+sudo pvcreate /dev/sdc1 --> crea volumen fisico
+sudo vgcreate vg_p5 /dev/sdc1 --> crea grupo volmen
+
+--previamente particonado disco d
+
+sudo vgextend vg_p5 /dev/sdd1
+
+
+
+------------------------------------------
+parte 3.2

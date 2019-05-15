@@ -23,12 +23,13 @@ while [ $(echo "$grupo" | wc -w)  -gt 0  ]; do
 		sudo lvcreate -L $tam --name $vol $grupo
 		sudo mkfs -t $filsis /dev/$grupo/$vol
 		sudo mount -t $filsis /dev/$grupo/$vol $dir
-		echo "/dev/$grupo/$vol $dir $filsis default 0 2" | sudo tee -a /etc/fstab
+		uuid=$(sudo blkid -o value -s UUID /dev/$grupo/$vol)
+		echo "UUID=$uuid $dir $filsis default 0 2" | sudo tee -a /etc/fstab
 	else
 		echo aumento
 		#existe, aumento
 		sudo lvextend -L+$tam /dev/$grupo/$vol
-		sudo e2fsck -f /dev/$grupo/$vol
+		#sudo e2fsck -f /dev/$grupo/$vol
 		sudo resize2fs /dev/$grupo/$vol
 	fi
 	read grupo vol tam filsis dir basura
