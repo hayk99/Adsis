@@ -1,7 +1,7 @@
-u#!/bin/bash
+#!/bin/bash
 #AUTORES: Hayk Kocharyan (757715) & Jose Felix Yagüe (755416)
 
-read grupo vol tam filsis dir basura
+read grupo vol tam filsis dire basura
 while [ $(echo "$grupo" | wc -w)  -gt 0  ]; do
 	#escaneamos para ver que grupos tenemos
 	grupos=$(sudo vgscan)
@@ -22,9 +22,9 @@ while [ $(echo "$grupo" | wc -w)  -gt 0  ]; do
 		#no existe, lo creo
 		sudo lvcreate -L $tam --name $vol $grupo
 		sudo mkfs -t $filsis /dev/$grupo/$vol
-		sudo mount -t $filsis /dev/$grupo/$vol $dir
+		sudo mount -t $filsis /dev/$grupo/$vol $dire
 		uuid=$(sudo blkid -o value -s UUID /dev/$grupo/$vol)
-		echo "UUID=$uuid\t$dir\t$filsis\tdefaults\t0\t2" | sudo tee -a /etc/fstab
+		echo -e "UUID=$uuid\t$dire\t$filsis\tdefaults\t0\t2" | sudo tee -a /etc/fstab
 	else
 		echo aumento
 		#existe, aumento
@@ -34,3 +34,6 @@ while [ $(echo "$grupo" | wc -w)  -gt 0  ]; do
 	fi
 	read grupo vol tam filsis dir basura
 done
+
+#umount /dev/vg/lv
+#lvremove /dev/vg/lv
