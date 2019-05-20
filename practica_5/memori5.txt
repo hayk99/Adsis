@@ -1,4 +1,4 @@
-PARTE_1
+mkoarPARTE_1
 ___________________________________________________________________________________________________________________________________________
 Tras crear el disco en la máquina virutal, arrancamos esta.
 En una terminal ejecutamos 'sudo parted /dev/sdb mklabel gpt' para detallar el tipo de tabla de partición, como exige en el enunciado esta debe ser GUID Partition table.
@@ -25,7 +25,15 @@ Creamos un script básico,con un ssh básico con los comandos exigidos en la pr�
 PARTE_3
 ___________________________________________________________________________________________________________________________________________
 Creamos el disco en los ajustes de Virutal Box como en el paso 1
-Para crear una partición LINUX LVM debemos crear las tres componentes de LVM, es decir, el volumen físico, el grupo de volumenes y el volumen lógico-
+Para crear una partición LINUX LVM debemos acceder mediante fdisk al particionado del disco, en nuestro caso el disco /dev/sdc
+Una vez ejecutado 'sudo fdisk /dev/sdc', introducimos 'n' para crear una particion nueva, 'p' para que sea primario, e introducimos 3 intros, el primero para que por defecto ponga el número de particion a 1 (si lo deseamos podemos modificarlo), y los dos intros siguientes son para especificar que queremos todo el tamaño de disco para la particion. Tras esto pulsamos 't', esta opción nos dejará elegir el tipo de partición lvm, le decimos que queremos una particion 8e, a continuación, tecleamos 'w', para guardar los cambios en disco.
+
+El siguiente paso consiste en crear el volumen físico, el comand a usar es 'sudo pvcreate /dev/sdc1', a continuación cremamos el grupo de volumenes, que llamaremos vg_p5, a través del comando 'sudo vgcreate vg_p5 /dev/sdc1'
+
+Para extender el grupo de volumenes optamos por crear otro disco que tiene la etiqueta /dev/sdd, el cual ha sido particionado en dos, pero estas particiones no tienen formato.
+Antes de la extension ejecutamos 'vgdisplay', tras la extensión lo ejecutamos de nuevo y veremos un cambio en el campo 'VG size' y en el campo 'Total PE'
+
+
 Para el volumen físico, ejecutaremos el comando 'sudo pvcreate /dev/sdc'.
 Para el grupo de volumenes, que lo llamaremos vg_p5, ejecutamos 'sudo vgcreate vg_p5 /dev/sdc/'
 El siguiente paso consiste en crear el volumen lógico que ocupe todo el volumen físico, para ello debemos conocer su tamaño, el cual podremos obtenerlo a través del comando 'vgdisplay'. Tras la ejecución podremos ver en la linea "FREE PE /SIZE", esta nos indica el número de extents y el tamaño en MiB. Para crear el volumen lógico poremos ejecutar 'lvcreate -L 32Mib --name vl_0 vg_p5' o 'lvcreate -l 8 --name vl_0 vg_p5', en ambos casos creamos lo mismo, en la primera especificamos el tamaño en MiB en la segunda en el numero de extents lógicos, el cual es más exacto y correcto de ejecutar.
@@ -34,26 +42,3 @@ Para comprobar la correcta ejecución ejecutamos 'vgdisplay',  este nos sacará 
 
 Damos el formato de sistema de fichero deseado: 'sudo mkfs -t ext4 /dev/vg_p5/vl_0'
 y montamos, 'sudo mount -t ext4 /dev/vg_p5/lv_0 /home/as/disk3'
-
-
-
------version2------------------
-parte 3.1
-
-añado disco
-sudo fdisk -f lista
-sudo fdisk /dev/sdc
-n-nuevo--->p-primario---->3 intros -->t--type--> 8e----lvm...-->w (guarda)
-
-
-sudo pvcreate /dev/sdc1 --> crea volumen fisico
-sudo vgcreate vg_p5 /dev/sdc1 --> crea grupo volmen
-
---previamente particonado disco d
-
-sudo vgextend vg_p5 /dev/sdd1
-
-
-
-------------------------------------------
-parte 3.2

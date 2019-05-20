@@ -17,7 +17,9 @@ then
 		exit 1
 	else
 		for parametro in "$@"; do
+			#creamos 
 			sudo pvcreate "$parametro"
+			#extendemos 
 			sudo vgextend "$vg" "$parametro"
 		done
 	fi
@@ -27,5 +29,5 @@ else
 	exit 1
 fi
 	
-	#vgreduce grupo /particion
-	#pvremove /particion
+#vgreduce grupo /particion
+#pvremove /particion

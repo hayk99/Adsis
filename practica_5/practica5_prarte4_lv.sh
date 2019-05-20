@@ -1,4 +1,4 @@
-#!/bin/bash
+u#!/bin/bash
 #AUTORES: Hayk Kocharyan (757715) & Jose Felix Yagüe (755416)
 
 read grupo vol tam filsis dir basura
@@ -24,7 +24,7 @@ while [ $(echo "$grupo" | wc -w)  -gt 0  ]; do
 		sudo mkfs -t $filsis /dev/$grupo/$vol
 		sudo mount -t $filsis /dev/$grupo/$vol $dir
 		uuid=$(sudo blkid -o value -s UUID /dev/$grupo/$vol)
-		echo "UUID=$uuid $dir $filsis default 0 2" | sudo tee -a /etc/fstab
+		echo "UUID=$uuid\t$dir\t$filsis\tdefaults\t0\t2" | sudo tee -a /etc/fstab
 	else
 		echo aumento
 		#existe, aumento
