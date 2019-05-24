@@ -34,11 +34,6 @@ Para extender el grupo de volumenes optamos por crear otro disco que tiene la et
 Antes de la extension ejecutamos 'vgdisplay', tras la extensión lo ejecutamos de nuevo y veremos un cambio en el campo 'VG size' y en el campo 'Total PE'
 
 
-Para el volumen físico, ejecutaremos el comando 'sudo pvcreate /dev/sdc'.
-Para el grupo de volumenes, que lo llamaremos vg_p5, ejecutamos 'sudo vgcreate vg_p5 /dev/sdc/'
-El siguiente paso consiste en crear el volumen lógico que ocupe todo el volumen físico, para ello debemos conocer su tamaño, el cual podremos obtenerlo a través del comando 'vgdisplay'. Tras la ejecución podremos ver en la linea "FREE PE /SIZE", esta nos indica el número de extents y el tamaño en MiB. Para crear el volumen lógico poremos ejecutar 'lvcreate -L 32Mib --name vl_0 vg_p5' o 'lvcreate -l 8 --name vl_0 vg_p5', en ambos casos creamos lo mismo, en la primera especificamos el tamaño en MiB en la segunda en el numero de extents lógicos, el cual es más exacto y correcto de ejecutar.
-(vl_0 es el nombre que le asginamos y vg_p5 es el nombre del grupo de volumenes).
-Para comprobar la correcta ejecución ejecutamos 'vgdisplay',  este nos sacará en el caso de que exista información del grupo de volumenes. Para comprobar el volumen lógico, ejecutamos 'vldisplay', este nos mostrará información del volumen lógico si se ha creado correctamente.
-
-Damos el formato de sistema de fichero deseado: 'sudo mkfs -t ext4 /dev/vg_p5/vl_0'
-y montamos, 'sudo mount -t ext4 /dev/vg_p5/lv_0 /home/as/disk3'
+=====SCRIPT GRUPO DE VOLUEMENES=====
+Destacar que para la extensión del grupo de volumenes, en primer lugar inicializamos el volumen físico para poder usarlo con LVM a través del comando 'pvcreate /dev/sdxx', a continuación usaremos 'vgextend vg_p5 /dev/sdxx' para completar la extensión
+Para la comprobación de la extensión hemos optado por sacar por pantalla la salida del comando 'vgdisplya', que nos muestra como ha variado el tamaño del grupo de volumenes.

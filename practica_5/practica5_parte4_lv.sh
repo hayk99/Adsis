@@ -4,7 +4,7 @@
 read grupo vol tam filsis dire basura
 while [ $(echo "$grupo" | wc -w)  -gt 0  ]; do
 	#escaneamos para ver que grupos tenemos
-	grupos=$(sudo vgscan)
+	grupos=$(sudo vgscan)w
 	#miramos si existe el grupo deseado en los escaneados anteriormente
 	echo "$grupos" | grep "$grupo"
 	if [ $? -gt 0 ]
@@ -18,15 +18,17 @@ while [ $(echo "$grupo" | wc -w)  -gt 0  ]; do
 	echo "$logicos" | grep "$vol"
 	if [ $? -gt 0 ]
 	then
-		echo creo
-		#no existe, lo creo
+		#no existe, entonces creo el volumen logico
 		sudo lvcreate -L $tam --name $vol $grupo
+		#doy formato y monto
 		sudo mkfs -t $filsis /dev/$grupo/$vol
+		#monto el sistema de ficheros
 		sudo mount -t $filsis /dev/$grupo/$vol $dire
+		#saco el uuid
 		uuid=$(sudo blkid -o value -s UUID /dev/$grupo/$vol)
-		echo -e "UUID=$uuid\t$dire\t$filsis\tdefaults\t0\t2" | sudo tee -a /etc/fstab
+		#escribo en fstab para montarse al arrancar
+		echo -e "UUID=$uuid\t$dire\t$filsis\tdefaults\t0\t2" | sudo tee -a /etc/fstab 
 	else
-		echo aumento
 		#existe, aumento
 		sudo lvextend -L+$tam /dev/$grupo/$vol
 		#sudo e2fsck -f /dev/$grupo/$vol
