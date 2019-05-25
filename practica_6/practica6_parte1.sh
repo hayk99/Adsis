@@ -30,8 +30,6 @@ echo Maquina local
 swap=$(free -h | sed -r -e 's/^( .*)//' | grep "Swap" | sed -r -e 's/^[^ ]*//g' -e 's/[ ]+/ /g' -e 's/^ //')
 swapLibre=$(echo $swap | cut -d' ' -f 2)
 echo Memoria swap utilizada: $swapLibre
-echo "SWAP UTILIZADO"
-echo ----------------------------------------------------
 echo Maquina remota
 swap=$(ssh as@192.168.56.3 free -h | sed -r -e 's/^( .*)//' | grep "Swap" | sed -r -e 's/^[^ ]*//g' -e 's/[ ]+/ /g' -e 's/^ //')
 swapLibre=$(echo $swap | cut -d' ' -f 2)
@@ -53,15 +51,15 @@ echo ----------------------------------------------------
 echo Maquina Local:
 netstat -l | grep -c LISTENING
 echo Maquina Remota:
-ssh as@192.168.56.3netstat -l | grep -c LISTENING
+ssh as@192.168.56.3 "netstat -l | grep -c LISTENING"
 echo
 
 echo "NUMERO DE CONEXIONES ESTABLECIDAS"
 echo ----------------------------------------------------
 echo Maquina Local:
-netstat | grep -c CONNECTED
+netstat -l | grep -c CONNECTED
 echo Maquina Remota:
-ssh as@192.168.56.3 netstat | grep -c CONNECTED
+ssh as@192.168.56.3 "netstat -l | grep -c CONNECTED"
 echo
 
 echo "NUMERO DE PROGRAMAS EN EJECUCIÓN"
@@ -69,4 +67,4 @@ echo ----------------------------------------------------
 echo Maquina Local:
 ps -A | wc -l
 echo Maquina Remota:
-ssh as@192.168.56.3  ps -A | wc -l
+ssh as@192.168.56.3 "ps -A | wc -l"

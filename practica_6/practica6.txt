@@ -1,2 +1,45 @@
-#!/bin/bash
 #AUTORES: Hayk Kocharyan (757715) & Jose Felix Yagüe (755416)
+
+
+###############################################################
+				PRIMERA PARTE PRACTICA 6
+###############################################################
+
+En primer lugar aclarar que hemos reusado las dos maquinas virtuales de las practica anteriores.
+En este caso tenemos como máquina, que ejecuta en local el script, la MV con nombre debian-as1 y con ip: 192.168.56.2, la maquina donde se ejecuta remotamente el script y que es la que recibe la informacion de monitorizacion de la primera es aquella con nombre debian-as2 y con ip: 192.168.56.3
+
+	###################################
+	   ASPECTOS A DESTACAR DEL SCRIPT
+	###################################
+La información de monitorización se ha obtenido tanto local como remotamente, en el caso de remoto, se ha usado ssh. Para que en cada uso de ssh no nos pida la contraseña de la maquina remota, usaremos una conexión cifrada, con clave rsa, para ello, siguiendo los pasos de la practica 4 haremos: 'ssh-keygen -t rsa', 'ssh-copy-id as@192.168.56.3'
+
+
+	###################################
+				EXPLICACIÓN
+	###################################
+Comencemos con la máquina debian-as1. 
+En primer lugar modificaremos 'ryslog.conf' ubicado en el directorio /etc
+1º: buscar y descomentar las doslineas correspondientes al modulo que proporciona rececpcion 	de syslog por conexion TCP. Destacar que se podria realizar también con UDP, 				descomentando las lineas correspondientes.
+2ª: añadir una nueva regla: 'local0.info 	@@192.168.56.3:514'
+	Donde local indica la procedencia del mensaje, las @@ indican conexión TCP, y a continuacion indicamos IP y su puerto correspondiente, en este caso la 514 como indica el comienzo del fichero rsyslog.conf.
+
+En la máquina debian-as2 realizaremos una configuración identica, salvo que la regla que añadiremos será en este caso 'local0.info 		/var/log/monitorization.log'
+	Indicamos que ante esta regla voclaremos esta información en el fichero monitorization.log ubicado en /var/log.
+
+A continuación, ejecutaremos 'sudo service rsyslog restart'.
+Para probar esta conexión ejecutamos en la MV debian-as1:
+		'logger -p local0.info mensaje'
+Si la conexión es correcta, en el fichero monitorization.log de la maquina debian-as2 deberia aparecer el mensaje con la fecha y hora de modificación.
+
+
+	#########################
+Para monitorizar el script y que este se ejecute cada minuto, modificaremos el fichero /etc/crontab añadiendo la siguiente linea:
+	'* * 	* * * as 	/home/as/script.sh | logger -p local0.info '
+
+tras esto ejecutamos 'sudo service cron restart', tras esto, cada minuto nuestra MV ejecutará el script y mandará la información a la máquina remota y esta la almacenará en el fichero especficado.
+
+
+
+###############################################################
+				SEGUNDA PARTE PRACTICA 6
+###############################################################
