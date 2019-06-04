@@ -8,132 +8,151 @@ sudo hostnamectl set-hostname debian1
 sudo nano /etc/hosts
 instalo las net-tools
 
-		################################
-				RED INTERNA 1
-		################################
+						################################
+								RED INTERNA 1
+						################################
 
 ################
 	DEBIAN1
 ################
-ifconfig -a para identificar redes y adaptadores
+En primer lugar identificamos los adaptadores y, a continuacion, procedemos a configurar las interfaces.
+(ifconfig -a para identificar redes y adaptadores)
 
-modificado interfaces 
+Añadimos en el fichro de /etc/network/interfaces:
 
-red host only
-auto enp0s8
-iface enp0s8 inet static
-	address 192.168.56.2
-	netmask 255.255.255.0
-	network 192.168.56.0
-	broadcast 192.168.56.255
+		#red host only
+		auto enp0s8
+		iface enp0s8 inet static
+			address 192.168.56.2
+			netmask 255.255.255.0
+			network 192.168.56.0
+			broadcast 192.168.56.255
 
-red interna: net1
-auto enp0s9
-iface enp0s9 inet static
-	address 192.168.1.1
-	netmask 255.255.255.0
-	network 192.168.1.0
-	broadcast 192.168.1.255
+		#red interna: net1
+		auto enp0s9
+		iface enp0s9 inet static
+			address 192.168.1.1
+			netmask 255.255.255.0
+			network 192.168.1.0
+			broadcast 192.168.1.255
 
-red interna: net2
-aut enp0s10
-iface enp0s10 inet static
-	address 192.168.2.1
-	netmask 255.255.255.0
-	network 192.168.2.0
-	broadcast 192.168.2.255
-	post-up route add -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.150
-	pre-down route del -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.150
+		#red interna: net2
+		aut enp0s10
+		iface enp0s10 inet static
+			address 192.168.2.1
+			netmask 255.255.255.0
+			network 192.168.2.0
+			broadcast 192.168.2.255
+			post-up route add -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.150
+			pre-down route del -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.150
+			#esta ruta nos permite saber a dónde redirigir los paquetes que lleguen a debian1 con destino red interna 3.
 
 
 ################
 	DEBIAN2
 ################
-añado adaptador con internal network
-desactivo nat (enp0s3) y solo dejo enp0s8 para red interna: net1
+En primer lugar quitamos el adaptador de la nat y añadimos uno nuevo para la red interna (enp0s8).
 
-auto enp0s8
-iface enp0s8 inet static
-	address 192.168.1.2
-	netmask 255.255.255.0
-	network 192.168.1.0
-	broadcast 192.168.1.255
-	gateway 192.168.1.1
-	post-up route add -net 192.168.1.0. netmask 255.255.255.0 gw 192.168.1.1 dev enp0s8
-	pre-down route del -net 192.168.1.0. netmask 255.255.255.0 gw 192.168.1.1 dev enp0s8
+Añadimos en el fichro de /etc/network/interfaces:
+
+	auto enp0s8
+	iface enp0s8 inet static
+		address 192.168.1.2
+		netmask 255.255.255.0
+		network 192.168.1.0
+		broadcast 192.168.1.255
+		gateway 192.168.1.1
+		post-up route add -net 192.168.1.0. netmask 255.255.255.0 gw 192.168.1.1 dev enp0s8
+		pre-down route del -net 192.168.1.0. netmask 255.255.255.0 gw 192.168.1.1 dev enp0s8
+		#esta ruta nos permite redirigir el tráfico por la red interna 1.
 
 
 ################
 	DEBIAN1
 ################
-fichero /etc/sysctl.conf
-#net.ipv4.ip_forward=0 ---> net.ipv4.ip_forward=1
+Para permitir el reenvio de paquetes, en el fichero /etc/sysctl.conf modificamos la siguiente linea:
+		#net.ipv4.ip_forward=0 ---> net.ipv4.ip_forward=1
 
-iptables -A FORWARD -i enp0s9 -j ACCEPT
-iptables -t nat -A POSTROUTING -s 192.168.58.0/24 -o enp0s3 -j MASQUERADE
+
+permitimos tráfico intranet en la red interna 1
+	iptables -A FORWARD -i enp0s9 -j ACCEPT
+
+permitimos acceso a la red de la red interna 1
+	iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o enp0s3 -j MASQUERADE
 
 ################
 	DEBIAN2
 ################
+una vez tenemos las iptables anteriores y las interfaces levantadas podemos instalar apache sin hacer uso de la ant en debian2
+
 sudo apt-get update 
 sudo apt-get isntall apache2
 
 
-		################################
-				RED INTERNA 2
-		################################
-sudo apt-get install isc-dhcp-server
-sudo nano /etc/default/isc-dhcp-server 
-	--> INTERFACESv4="" ---> INTERFACESv4="enp0s10"
-restringes servicio dhcp a esta red
+						################################
+								RED INTERNA 2
+						################################
+################
+	DEBIAN1
+################						
+Procedemos a instalar dhcp en el debian 1.
+	sudo apt-get install isc-dhcp-server
+	sudo nano /etc/default/isc-dhcp-server 
+		--> INTERFACESv4="" ---> INTERFACESv4="enp0s10"
+	Con esta linea, lo que conseguimos es restringir el servicio dhcp a esta red
 
+Condiguramos el servicio dhcp modificando el fichero de configuracion que se encuentra en /etc/dhcp/dhcpd.conf
+//datos cogidos de las diapositivas
+	option domain-name "midominio.com";
+	option domain-name-servers 10.0.2.3, 193.14.7.9;
+	default-lease-time 600; 
+	max-lease-time 7200;
+	option subnet-mask 255.255.255.0;
 
-option domain-name "midominio.com";
-option domain-name-servers 10.0.2.3, 193.14.7.9;
-default-lease-time 600; 
-max-lease-time 7200;
-option subnet-mask 255.255.255.0;
+definimos a la subred que vamos a suministrar este servicio
+	subnet 192.168.2.0 netmask 255.255.255.0 {
+		range 192.168.2. 192.168.2.10;
+		option broadcast-address 192.168.2.255;
+		option routers 192.168.2.1;
+	}
 
-subnet 192.168.2.0 netmask 255.255.255.0 {
-	range 192.168.2. 192.168.2.5;
-	option broadcast-address 192.168.2.255;
-	option routers 192.168.2.1;
-}
-
-host debian1 {
-	hardware ethernet 08:00:27:f9:c6:8d; #mac red
-	fixed-address 192.168.2.1;
-}
+definimos a la maquina debian1 como host dhcp
+	host debian1 {
+		hardware ethernet 08:00:27:f9:c6:8d; #mac red
+		fixed-address 192.168.2.150;
+	}
 
 #######################
-	DEBIAN 3  Y 4 y 6
+	DEBIAN 3, 4 y 6
 #######################
-Para las 3 maquina:
+Para las 2 maquina:
 
-desactivamos adaptador de nat y añadimos uno de internal network a la red 2
-modificamos fichero interfaces 
+desactivamos adaptador de nat y añadimos uno de tipo 'internal network' a la red 2
+modificamos fichero interfaces cofigurando el adaptador como dhcp.
 	allow-hotplug enp0s8
 	iface enp0s8 inet dhcp
 
 ################
 	DEBIAN1
 ################
-iptables -A FORWARD -i enp0s10 -j ACCEPT
-iptables -t nat -A POSTROUTING -s 192.168.2.0/24 -o enp0s3 -j MASQUERADE
+Permitimos el trafico intranet a través de la red interna 2
+	iptables -A FORWARD -i enp0s10 -j ACCEPT
+Permitimos conexion a internet desde las maquinas de la red interna 2
+	iptables -t nat -A POSTROUTING -s 192.168.2.0/24 -o enp0s3 -j MASQUERADE
 
-#######################
-	DEBIAN 3  Y 4 y 6
-#######################
 
-ifup enp0s8
 
-tras esto ya podemos instalar sudo y net-tools para su futuro uso
+tras esto ya podemos instalar sudo y net-tools para su futuro uso, ya que disponemos de conexióna internet (en las maquinas 3,4 y 6)
+
+################
+	DEBIAN6
+################
 
 Ademas para debian6:
-	Tendremos que modificar el fichero /etc/dhcp/dhcpd.conf y añadir a debian6 con ip estatica
+	Tendremos que modificar el fichero /etc/dhcp/dhcpd.conf y añadir a debian6 con ip estatica.
 
 host debian6 {
-	hardware ethernet 08:00:27:05:99:28; #mac red
+	hardware ethernet 08:00:27:05:99:28; 
 	fixed-address 192.168.2.150;
 }
 
@@ -144,6 +163,7 @@ host debian6 {
 ################
 	DEBIAN 6
 ################
+Previamente hemos desactivado el adapatador de la nat y hemos añadido otros dos adaptadores uno para la red interna 2 y otro para la red interna 3
 auto enp0s9
 iface enp0s9 inet static
 	address 192.168.3.1
@@ -151,39 +171,38 @@ iface enp0s9 inet static
 	broadcast 192.168.3.255
 	network 192.168.3.0
 
-activamos forwarding :
-
-fichero /etc/sysctl.conf
- #net.ipv4.ip_forward=0 ---> net.ipv4.ip_forward=1
+activamos forwarding para esta máquina, como se hice en su momento con la debian 1.
+	fichero /etc/sysctl.conf
+	 #net.ipv4.ip_forward=0 ---> net.ipv4.ip_forward=1
 
 ################
 	DEBIAN 5
 ################
 auto enp0s8
 iface enp0s8 inet static
-	address 192.168.60.2
+	address 192.168.3.2
 	netmask 255.255.255.0
-	broadcast 192.168.60.255
-	network 192.168.60.0
-	gateway 192.168.60.1
-	post-up route add -net 192.168.60.0. netmask 255.255.255.0 gw 192.168.60.1 dev enp0s8
-	pre-down route del -net 192.168.60.0. netmask 255.255.255.0 gw 192.168.60.1 dev enp0s8
+	broadcast 192.168.3.255
+	network 192.168.3.0
+	gateway 192.168.3.1
+	post-up route add -net 192.168.3.0. netmask 255.255.255.0 gw 192.168.3.1 dev enp0s8
+	pre-down route del -net 192.168.3.0. netmask 255.255.255.0 gw 192.168.3.1 dev enp0s8
+	#esta ruta nos permite conocer a dónde redirigir paquetes con destino debian 3.
 
-ifup enp0s8
+como ya configuramos al principio debian 1 ya conoce por donde mandar los paquetes correspondientes a debian 5 y 6
 
-como ya configuramos al principio debian 1 ya conoce por donde mandar los paqueetes correspondientes a debian 5 y 6
+ahora ya podremos instalar el servidor ssh 
+	apt-get install openssh-server
+por seguridad, no permitiremos ssh como root, es decir, siguiendo los pasos de las practicas, deshabilitaremos el login como root
 
 
-################
-	DEBIAN 6
-################
-debe permitir que debian 5 se conecte a internet
+instalamos en debian 1 openssh-client y probamos el correcto comportamiento de la conexion con la maquina debian 5
 
-iptables -A FORWARD -i enp0s10 -j ACCEPT
-iptables -t nat -A POSTROUTING -s 192.168.2.0/24 -o enp0s8 -j MASQUERADE
-
-###############
-	DEBIAN 5
-################
-apt-get install openssh-server
-no permitir root como root
+Para configurar el tráfico hacia el host añadimos estas iptables:
+	iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -d 192.168.56.0/24 -o enp0s8 -j MASQUERADE
+	iptables -t nat -A POSTROUTING -s 192.168.2.0/24 -d 192.168.56.0/24 -o enp0s8 -j MASQUERADE
+	iptables -t nat -A POSTROUTING -s 192.168.3.0/24 -d 192.168.56.0/24 -o enp0s8 -j MASQUERADE
+El tráfico hacia la red ya la hemos habilitado a lo largo del trabajo.
+Finalmente denegamos ping a debian1 desde extranet
+iptables -A INPUT -i enp0s3 -p icmp -j DROP
+iptables -A INPUT -i enp0s8 -p icmp -j DROP
