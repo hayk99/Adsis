@@ -110,7 +110,7 @@ host debian1 {
 #######################
 Para las 3 maquina:
 
-desactivamos adaptador de nat y añadimos un de internal network a la red 2
+desactivamos adaptador de nat y añadimos uno de internal network a la red 2
 modificamos fichero interfaces 
 	allow-hotplug enp0s8
 	iface enp0s8 inet dhcp

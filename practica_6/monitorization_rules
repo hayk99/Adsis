@@ -1,0 +1,29 @@
+MAQUINA: 192.168.56.[1-3]/24
+
+USUARIOS Y CARGA MEDIA DE TRABAJO
+----------------------------------------------------
+[0-1] user --> load average: [0-1].[0-9][0-9], [0-1].[0-5][0-9], [0-1].[0-5][0-9]
+
+MEMORIA OCUPADA Y LIBRE
+----------------------------------------------------
+El total es [0-2].[0-1]G y disponemos de [0-5][0-9][0-9]M
+
+SWAP UTILIZADO
+----------------------------------------------------
+Memoria swap utilizada: 0B
+
+ESPACIO OCUPADO
+----------------------------------------------------
+Espacio ocupado y libre: [0-2][0-2]G [0-5].[0-9]G
+
+NUMERO DE PUERTOS ESCUCHANDO
+----------------------------------------------------
+[0-4][0-8]
+
+NUMERO DE CONEXIONES ESTABLECIDAS
+----------------------------------------------------
+[0-1]
+
+NUMERO DE PROGRAMAS EN EJECUCIÓN
+----------------------------------------------------
+[0-1][0-4][0-3]
