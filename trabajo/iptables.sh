@@ -3,6 +3,12 @@
 
 iptables -F
 iptables -t nat -F
+iptables -t nat -Z
+#borramos las iptables existentes y ponemos a 0 los contadores
+
+#bloqueamos todo trafico al host o enrutado por host
+
+
 
 # Permitimos todo tráfico intranet
 #1
@@ -13,8 +19,7 @@ iptables -A FORWARD -i enp0s10 -j ACCEPT
 
 # intranet con acceso a internet
 #2
-iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o enp0s3 -j MASQUERADE
-#5
+iptables -t nat -A POSTROUTING -s 192.168.1.2/30 -o enp0s3 -j SNAT --to 192.168.56.2
 iptables -t nat -A POSTROUTING -s 192.168.2.0/24 -o enp0s3 -j MASQUERADE
 #6
 iptables -t nat -A POSTROUTING -s 192.168.3.0/24 -o enp0s3 -j MASQUERADE
@@ -32,9 +37,7 @@ iptables -t nat -A POSTROUTING -s 192.168.3.0/24 -d 192.168.56.0/24 -o enp0s8 -j
 # Extranet con acceso al servidor web de debian2 mediante http (80) o https (443)
 
 #3
-iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 80 -j DNAT --to 192.168.1.2:80
 iptables -t nat -A PREROUTING -i enp0s8 -p tcp --dport 80 -j DNAT --to 192.168.1.2:80
-iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 443 -j DNAT --to 192.168.1.2:443
 iptables -t nat -A PREROUTING -i enp0s8 -p tcp --dport 443 -j DNAT --to 192.168.1.2:443
 
 #---------------------------------------------------------------------------------------
@@ -45,6 +48,7 @@ iptables -t nat -A PREROUTING -i enp0s8 -p tcp --dport 443 -j DNAT --to 192.168.
 #7
 iptables -t nat -A PREROUTING -i enp0s3 -p tcp --dport 22 -j DNAT --to 192.168.3.2:22
 iptables -t nat -A PREROUTING -i enp0s8 -p tcp --dport 22 -j DNAT --to 192.168.3.2:22
+
 #---------------------------------------------------------------------------------------
 
 # bucle local
@@ -60,6 +64,8 @@ iptables -A INPUT -i enp0s8 -p icmp -m state --state ESTABLISHED,RELATED -j ACCE
 # Denegar ping a debian1 desde extranet
 iptables -A INPUT -i enp0s3 -p icmp -j DROP
 iptables -A INPUT -i enp0s8 -p icmp -j DROP
+
+iptables -A FORWARD 
 #---------------------------------------------------------------------------------------
 
 

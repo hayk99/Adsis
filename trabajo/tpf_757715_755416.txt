@@ -1,12 +1,11 @@
-#AUTORES: Hayk Kocharyan (757715) & Jose Felix Yagüe (755416)
+AUTORES: Hayk Kocharyan (757715) & Jose Felix Yagüe (755416)
+ultima modificación 9/6/19
 
 ##################
 TODAS LAS MAQUINAS
 ##################
-Instalo sudo y añado a user al sudoers
-sudo hostnamectl set-hostname debian1
+sudo hostnamectl set-hostname debianX siendo X el numero de la máquina
 sudo nano /etc/hosts
-instalo las net-tools
 
 						################################
 								RED INTERNA 1
@@ -74,11 +73,18 @@ Para permitir el reenvio de paquetes, en el fichero /etc/sysctl.conf modificamos
 		#net.ipv4.ip_forward=0 ---> net.ipv4.ip_forward=1
 
 
-permitimos tráfico intranet en la red interna 1
+permitimos enrutamiento a traves de debian 1 a la interfaz enp0s9
 	iptables -A FORWARD -i enp0s9 -j ACCEPT
 
-permitimos acceso a la red de la red interna 1
-	iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o enp0s3 -j MASQUERADE
+permitimos acceso a la red de la red interna 1 con ip del host (firewall)
+	iptables -t nat -A POSTROUTING -s 192.168.1.2/30 -o enp0s3 -j SNAT --to 192.168.56.2
+	iptables -t nat -A POSTROUTING -s 192.168.1.2/30 -o enp0s3 -j MASQUERADE
+	tambien se puede optar por esta opción, ya que aunque no sea una ip dinámica la que solicita acceso a internet, la opción masquerade funciona con estaticastambien.
+
+	Finalmente para poder acceder al servidor web desde la extranet, vamos a habilitar el puerto http y https para el host
+		iptables -t nat -A PREROUTING -i enp0s8 -p tcp --dport 80 -j DNAT --to 192.168.1.2:80
+		iptables -t nat -A PREROUTING -i enp0s8 -p tcp --dport 443 -j DNAT --to 192.168.1.2:443
+		con esto indicamos que cuando entren paquetes por enps08 con protocolo tcp y puerto 80 o 443 alteraremos el destino a la direccion 192.168.1.2
 
 ################
 	DEBIAN2
@@ -86,7 +92,7 @@ permitimos acceso a la red de la red interna 1
 una vez tenemos las iptables anteriores y las interfaces levantadas podemos instalar apache sin hacer uso de la ant en debian2
 
 sudo apt-get update 
-sudo apt-get isntall apache2
+sudo apt-get install apache2
 
 
 						################################
@@ -118,9 +124,11 @@ definimos a la subred que vamos a suministrar este servicio
 
 definimos a la maquina debian1 como host dhcp
 	host debian1 {
-		hardware ethernet 08:00:27:f9:c6:8d; #mac red
+		hardware ethernet 08:00:27:f9:c6:8d; 
 		fixed-address 192.168.2.150;
 	}
+
+
 
 #######################
 	DEBIAN 3, 4 y 6
@@ -135,10 +143,18 @@ modificamos fichero interfaces cofigurando el adaptador como dhcp.
 ################
 	DEBIAN1
 ################
-Permitimos el trafico intranet a través de la red interna 2
-	iptables -A FORWARD -i enp0s10 -j ACCEPT
+
+Permitimos enrutamiento a través de debian 1 para la interfaz enp0s10
+iptables -A FORWARD -i enp0s10 -j ACCEPT
+
 Permitimos conexion a internet desde las maquinas de la red interna 2
-	iptables -t nat -A POSTROUTING -s 192.168.2.0/24 -o enp0s3 -j MASQUERADE
+	iptables -t nat -A POSTROUTING -s 192.168.2.0/28 -o enp0s3 -j MASQUERADE
+Como con la anterior iptable hemos sido muy restrictivos tenemos que crear otro para que 192.168.2.150 (debian 6) tenga permiso de red.
+	iptables -t nat -A POSTROUTING -s 192.168.2.150/32 -o enp0s3 -j MASQUERADE
+
+Nos adelantaamos y permitimos conexion a red para la red 3 que solo dispone de un host (192.168.3.2)
+	iptables -t nat -A POSTROUTING -s 192.168.3.0/30 -o enp0s3 -j MASQUERADE
+
 
 
 
@@ -164,6 +180,13 @@ host debian6 {
 	DEBIAN 6
 ################
 Previamente hemos desactivado el adapatador de la nat y hemos añadido otros dos adaptadores uno para la red interna 2 y otro para la red interna 3
+auto enp0s8
+iface enp0s8 inet static
+	address 192.168.2.150
+	netmask 255.255.255.0
+	broadcast 192.168.2.255
+	network 192.168.2.0
+
 auto enp0s9
 iface enp0s9 inet static
 	address 192.168.3.1
@@ -187,7 +210,6 @@ iface enp0s8 inet static
 	gateway 192.168.3.1
 	post-up route add -net 192.168.3.0. netmask 255.255.255.0 gw 192.168.3.1 dev enp0s8
 	pre-down route del -net 192.168.3.0. netmask 255.255.255.0 gw 192.168.3.1 dev enp0s8
-	#esta ruta nos permite conocer a dónde redirigir paquetes con destino debian 3.
 
 como ya configuramos al principio debian 1 ya conoce por donde mandar los paquetes correspondientes a debian 5 y 6
 
@@ -198,11 +220,23 @@ por seguridad, no permitiremos ssh como root, es decir, siguiendo los pasos de l
 
 instalamos en debian 1 openssh-client y probamos el correcto comportamiento de la conexion con la maquina debian 5
 
-Para configurar el tráfico hacia el host añadimos estas iptables:
-	iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -d 192.168.56.0/24 -o enp0s8 -j MASQUERADE
-	iptables -t nat -A POSTROUTING -s 192.168.2.0/24 -d 192.168.56.0/24 -o enp0s8 -j MASQUERADE
-	iptables -t nat -A POSTROUTING -s 192.168.3.0/24 -d 192.168.56.0/24 -o enp0s8 -j MASQUERADE
-El tráfico hacia la red ya la hemos habilitado a lo largo del trabajo.
-Finalmente denegamos ping a debian1 desde extranet
-iptables -A INPUT -i enp0s3 -p icmp -j DROP
-iptables -A INPUT -i enp0s8 -p icmp -j DROP
+
+Por último, unas ultimas iptables:
+	-permitir bucle local
+	iptables -A INPUT -i lo -d 127.0.0.1 -j ACCEPT
+
+################################
+		AUTOMATIZACIÓN			
+################################
+Para automatizar las iptables y que se carguen en el arranque, en primer lugar guardaremos las iptables creadas en un fichero localizado en /etc/ con nombre iptables_backup
+
+iptables-save > /etc/iptables_backup
+
+en /etc/network/if-pre-up.d creamos el fichero 'iptables' con lo siguiente
+
+#!/bin/sh
+iptables-restore < /etc/iptables_backup
+
+y le damos permisos de ejecución
+
+chmod +x /etc/network/if-pre-up.d/iptables
